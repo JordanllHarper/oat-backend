@@ -24,9 +24,9 @@ func handleRoute(
 	pat string,
 	handler HttpResponseHandler,
 ) {
-	mux.Handle(
+	mux.HandleFunc(
 		pat,
-		http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		func(w http.ResponseWriter, r *http.Request) {
 			response, err := handler(r)
 			if err != nil {
 				httpErr := mapErrToHttpError(err)
@@ -45,7 +45,7 @@ func handleRoute(
 				http.Error(w, fmt.Sprintf("An error occurred while encoding json: %v", err), http.StatusInternalServerError)
 				return
 			}
-		})),
+		},
 	)
 }
 

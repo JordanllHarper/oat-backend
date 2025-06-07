@@ -14,7 +14,10 @@ func handleGetTaskById(tasks taskStore) HttpResponseHandler {
 	}
 }
 
-func handleGetCurrentTask(tasks taskStore, contexts contextStore) HttpResponseHandler {
+func handleGetCurrentTask(
+	tasks taskStore,
+	contexts contextStore,
+) HttpResponseHandler {
 	return func(r *http.Request) (HttpResponse, error) {
 		ctx, err := getCtx(contexts, r)
 		if err != nil {
@@ -50,10 +53,13 @@ func handleCompleteCurrentTask(
 		return statusOk{next}, nil
 	}
 }
-func handlePostTask(tasks taskStore, contexts contextStore) HttpResponseHandler {
+func handlePostTask(
+	tasks taskStore,
+	contexts contextStore,
+) HttpResponseHandler {
 	type postTask struct {
 		Title    string   `json:"title"`
-		Notes    string   `json:"notes"`
+		Notes    *string  `json:"notes"`
 		Priority priority `json:"priority"`
 	}
 	return func(r *http.Request) (HttpResponse, error) {
@@ -65,18 +71,17 @@ func handlePostTask(tasks taskStore, contexts contextStore) HttpResponseHandler 
 		if err != nil {
 			return nil, malformedBody{}
 		}
-		newTask := newTask(
+		t, err := addTask(
+			tasks,
 			ctx.Id,
 			postTask.Title,
 			postTask.Notes,
 			postTask.Priority,
 		)
-		if err := tasks.InsertTask(
-			newTask,
-		); err != nil {
+		if err != nil {
 			return nil, err
 		}
-		return statusCreated{newTask}, nil
+		return statusCreated{t}, nil
 	}
 }
 func handlePostCurrentTask(
@@ -85,7 +90,7 @@ func handlePostCurrentTask(
 ) HttpResponseHandler {
 	type postTask struct {
 		Title    string   `json:"title"`
-		Notes    string   `json:"notes"`
+		Notes    *string  `json:"notes"`
 		Priority priority `json:"priority"`
 	}
 	return func(r *http.Request) (HttpResponse, error) {
@@ -97,22 +102,23 @@ func handlePostCurrentTask(
 		if err != nil {
 			return nil, malformedBody{err}
 		}
-		newTask := newTask(
+		t, err := addTask(
+			tasks,
 			ctx.Id,
 			postTask.Title,
 			postTask.Notes,
 			postTask.Priority,
 		)
-		if err = tasks.InsertTask(newTask); err != nil {
+		if err != nil {
 			return nil, err
 		}
-		if err = contexts.SetNewCurrentTask(ctx.Id, newTask.Id); err != nil {
+		if err = contexts.SetNewCurrentTask(ctx.Id, t.Id); err != nil {
 			return nil, err
 		}
-		return statusCreated{newTask}, nil
+		return statusCreated{t}, nil
 	}
 }
-func handlePutCurrentTask(tasks taskStore) HttpResponseHandler {
+func handlePutCurrentTask(tasks taskStore, contexts contextStore) HttpResponseHandler {
 	type putTask struct {
 		ContextId *id       `json:"contextId"`
 		Title     *string   `json:"title"`
@@ -120,7 +126,15 @@ func handlePutCurrentTask(tasks taskStore) HttpResponseHandler {
 		Priority  *priority `json:"priority"`
 	}
 	return func(r *http.Request) (HttpResponse, error) {
-		currentTaskToModify, err := getById(tasks, r.PathValue(idKey))
+		ctx, err := getCtx(contexts, r)
+		if err != nil {
+			return nil, err
+		}
+		currentTaskId := ctx.CurrentTaskId
+		if currentTaskId == nil {
+			return nil, noCurrentTask(ctx.Id)
+		}
+		currentTask, err := tasks.GetById(*currentTaskId)
 		if err != nil {
 			return nil, err
 		}
@@ -128,22 +142,30 @@ func handlePutCurrentTask(tasks taskStore) HttpResponseHandler {
 		if err != nil {
 			return nil, malformedBody{err}
 		}
+
 		if putTask.ContextId != nil {
-			currentTaskToModify.ContextId = *putTask.ContextId
+			_, err := contexts.GetById(*putTask.ContextId)
+			if err != nil {
+				return nil, err
+			}
+			currentTask.ContextId = *putTask.ContextId
 		}
 		if putTask.Title != nil {
-			currentTaskToModify.Title = *putTask.Title
+			currentTask.Title = *putTask.Title
 		}
 		if putTask.Notes != nil {
-			currentTaskToModify.Notes = *putTask.Notes
+			currentTask.Notes = putTask.Notes
 		}
 		if putTask.Priority != nil {
-			currentTaskToModify.Priority = *putTask.Priority
+			if !priorityValid(*putTask.Priority) {
+				return nil, invalidPriority(*putTask.Priority)
+			}
+			currentTask.Priority = *putTask.Priority
 		}
-		newTask, err := tasks.ModifyTask(currentTaskToModify)
+		t, err := tasks.ModifyTask(currentTask)
 		if err != nil {
 			return nil, err
 		}
-		return statusOk{newTask}, nil
+		return statusOk{t}, nil
 	}
 }

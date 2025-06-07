@@ -25,7 +25,8 @@ type (
 	couldntFindCurrentTask struct {
 		taskId, contextId id
 	}
-	noCurrentTask id
+	noCurrentTask   id
+	invalidPriority priority
 )
 
 func (err internalServerError) StatusCode() int { return http.StatusInternalServerError }
@@ -60,3 +61,6 @@ func (err couldntFindCurrentTask) Error() string {
 
 func (err noCurrentTask) StatusCode() int { return http.StatusBadRequest }
 func (err noCurrentTask) Error() string   { return fmt.Sprintf("No current task for: %s", id(err)) }
+
+func (err invalidPriority) StatusCode() int { return http.StatusBadRequest }
+func (err invalidPriority) Error() string   { return fmt.Sprintf("Invalid priority specified: %d", err) }

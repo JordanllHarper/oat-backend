@@ -5,9 +5,9 @@ import (
 )
 
 const (
-	One   priority = 1
-	Two   priority = 2
-	Three priority = 3
+	One   priority = 1 // important
+	Two   priority = 2 // important but can wait
+	Three priority = 3 // can wait
 )
 
 type (
@@ -18,7 +18,7 @@ type (
 		Id        id       `json:"id"`
 		ContextId id       `json:"contextId"`
 		Title     string   `json:"title"`
-		Notes     string   `json:"notes"`
+		Notes     *string  `json:"notes"`
 		Priority  priority `json:"priority"`
 	}
 
@@ -32,7 +32,7 @@ type (
 func newTask(
 	contextId id,
 	title string,
-	notes string,
+	notes *string,
 	priority priority,
 ) task {
 	return task{

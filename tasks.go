@@ -4,15 +4,18 @@ import (
 	"slices"
 )
 
-type taskStore interface {
-	IDable[task]
-	All() ([]task, error)
-	InsertTask(t task) error
-	ModifyTask(newTask task) (task, error)
-	RemoveTask(tId id) error
-}
+type (
+	taskStore interface {
+		IDable[task]
+		All() ([]task, error)
+		InsertTask(t task) error
+		ModifyTask(t task) (task, error)
+		RemoveTask(tId id) error
+		DeleteByContext(cId id) error
+	}
 
-type taskStoreImpl []task
+	taskStoreImpl []task
+)
 
 func (tsi taskStoreImpl) All() ([]task, error) { return tsi, nil }
 
@@ -51,4 +54,10 @@ func (tsi *taskStoreImpl) RemoveTask(tId id) error {
 	*tsi = sliceUnorderedRemove((*tsi), idx)
 	return nil
 
+}
+func (tsi *taskStoreImpl) DeleteByContext(cId id) error {
+	*tsi = slices.DeleteFunc(*tsi, func(t task) bool {
+		return t.ContextId == cId
+	})
+	return nil
 }

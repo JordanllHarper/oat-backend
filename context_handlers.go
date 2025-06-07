@@ -69,7 +69,7 @@ func handlePutContext(contexts contextStore) HttpResponseHandler {
 	}
 }
 
-func handleDeleteContext(contexts contextStore) HttpResponseHandler {
+func handleDeleteContext(contexts contextStore, tasks taskStore) HttpResponseHandler {
 	return func(r *http.Request) (HttpResponse, error) {
 		qId := r.PathValue(idKey)
 		id, err := uuid.Parse(qId)
@@ -77,6 +77,9 @@ func handleDeleteContext(contexts contextStore) HttpResponseHandler {
 			return nil, malformedId{qId, err}
 		}
 		if err = contexts.Delete(id); err != nil {
+			return nil, err
+		}
+		if err = tasks.DeleteByContext(id); err != nil {
 			return nil, err
 		}
 		return statusNoContent{}, nil
