@@ -112,7 +112,7 @@ func handlePostCurrentTask(
 		if err != nil {
 			return nil, err
 		}
-		if err = contexts.SetNewCurrentTask(ctx.Id, t.Id); err != nil {
+		if err = contexts.SetNewCurrentTask(ctx.Id, &t.Id); err != nil {
 			return nil, err
 		}
 		return statusCreated{t}, nil

@@ -10,7 +10,7 @@ type contextStore interface {
 	All() ([]context, error)
 	Add(c context) error
 	EditName(id id, name string) (context, error)
-	SetNewCurrentTask(ctxId id, tId id) error
+	SetNewCurrentTask(ctxId id, tId *id) error
 	Delete(id id) error
 }
 
@@ -53,12 +53,12 @@ func (csi contextStoreImpl) Delete(id id) error {
 	return nil
 }
 
-func (csi contextStoreImpl) SetNewCurrentTask(ctxId, tId id) error {
+func (csi contextStoreImpl) SetNewCurrentTask(ctxId id, tId *id) error {
 	ctx, err := csi.GetById(ctxId)
 	if err != nil {
 		return err
 	}
-	ctx.CurrentTaskId = &tId
+	ctx.CurrentTaskId = tId
 	csi[ctx.Id] = ctx
 	return nil
 }
