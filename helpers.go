@@ -97,10 +97,13 @@ func addTask(
 	if !priorityValid(p) {
 		return task{}, invalidPriority(p)
 	}
+	if strings.TrimSpace(title) == "" {
+		return task{}, noTitle{}
+	}
 	if notes != nil {
 		// if a user adds newlines intentionally we don't want to remove them
 		*notes = trimPreserveNewline(*notes)
-		if len(*notes) == 0 {
+		if *notes == "" {
 			notes = nil
 		}
 	}
