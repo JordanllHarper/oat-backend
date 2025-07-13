@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"slices"
+	"strings"
 
 	"github.com/google/uuid"
 )
@@ -22,7 +23,7 @@ func getById[T any](g IDable[T], idstr string) (T, error) {
 	return g.GetById(id)
 }
 
-func getCtx(contexts contextStore, r *http.Request) (context, error) {
+func getCtxFromRq(contexts contextStore, r *http.Request) (context, error) {
 	const ctxQryParam = "contextId"
 	if !r.URL.Query().Has(ctxQryParam) {
 		return context{}, noContextProvided{}

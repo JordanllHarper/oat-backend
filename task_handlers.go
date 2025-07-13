@@ -19,7 +19,7 @@ func handleGetCurrentTask(
 	contexts contextStore,
 ) HttpResponseHandler {
 	return func(r *http.Request) (HttpResponse, error) {
-		ctx, err := getCtx(contexts, r)
+		ctx, err := getCtxFromRq(contexts, r)
 		if err != nil {
 			return nil, err
 		}
@@ -39,7 +39,7 @@ func handleCompleteCurrentTask(
 	contexts contextStore,
 ) HttpResponseHandler {
 	return func(r *http.Request) (HttpResponse, error) {
-		ctxId, err := getCtx(contexts, r)
+		ctxId, err := getCtxFromRq(contexts, r)
 		if err != nil {
 			return nil, err
 		}
@@ -63,7 +63,7 @@ func handlePostTask(
 		Priority priority `json:"priority"`
 	}
 	return func(r *http.Request) (HttpResponse, error) {
-		ctx, err := getCtx(contexts, r)
+		ctx, err := getCtxFromRq(contexts, r)
 		if err != nil {
 			return nil, err
 		}
@@ -94,7 +94,7 @@ func handlePostCurrentTask(
 		Priority priority `json:"priority"`
 	}
 	return func(r *http.Request) (HttpResponse, error) {
-		ctx, err := getCtx(contexts, r)
+		ctx, err := getCtxFromRq(contexts, r)
 		if err != nil {
 			return nil, err
 		}
@@ -126,7 +126,7 @@ func handlePutCurrentTask(tasks taskStore, contexts contextStore) HttpResponseHa
 		Priority  *priority `json:"priority"`
 	}
 	return func(r *http.Request) (HttpResponse, error) {
-		ctx, err := getCtx(contexts, r)
+		ctx, err := getCtxFromRq(contexts, r)
 		if err != nil {
 			return nil, err
 		}
