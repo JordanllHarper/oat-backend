@@ -27,6 +27,7 @@ type (
 	}
 	noCurrentTask   id
 	invalidPriority priority
+	noTitle         struct{}
 )
 
 func (err internalServerError) StatusCode() int { return http.StatusInternalServerError }
@@ -43,7 +44,7 @@ func (err malformedId) Error() string {
 }
 
 func (err noMoreTasks) StatusCode() int { return http.StatusBadRequest }
-func (err noMoreTasks) Error() string   { return fmt.Sprintf("No more tasks") }
+func (err noMoreTasks) Error() string   { return "No more tasks" }
 
 func (err malformedBody) StatusCode() int { return http.StatusBadRequest }
 func (err malformedBody) Error() string   { return fmt.Sprintf("Malformed body: %s", err.error.Error()) }
@@ -52,7 +53,7 @@ func (err unsupportedRoute) StatusCode() int { return http.StatusBadRequest }
 func (err unsupportedRoute) Error() string   { return fmt.Sprintf("Unsupported route %s", string(err)) }
 
 func (err noContextProvided) StatusCode() int { return http.StatusBadRequest }
-func (err noContextProvided) Error() string   { return fmt.Sprintf("No context id provided") }
+func (err noContextProvided) Error() string   { return "No context id provided" }
 
 func (err couldntFindCurrentTask) StatusCode() int { return http.StatusInternalServerError }
 func (err couldntFindCurrentTask) Error() string {
@@ -64,3 +65,6 @@ func (err noCurrentTask) Error() string   { return fmt.Sprintf("No current task 
 
 func (err invalidPriority) StatusCode() int { return http.StatusBadRequest }
 func (err invalidPriority) Error() string   { return fmt.Sprintf("Invalid priority specified: %d", err) }
+
+func (err noTitle) StatusCode() int { return http.StatusBadRequest }
+func (err noTitle) Error() string   { return "No title specified" }
