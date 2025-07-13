@@ -8,30 +8,6 @@ import (
 	"github.com/google/uuid"
 )
 
-func logResponses(h http.Handler, logger *log.Logger) http.Handler {
-	return http.HandlerFunc(
-		func(w http.ResponseWriter, r *http.Request) {
-			logger.Println("Received request: ", r.Method, r.URL)
-			h.ServeHTTP(w, r)
-		},
-	)
-}
-
-func logStores(
-	h http.Handler,
-	logger *log.Logger,
-	tasks taskStore,
-	contexts contextStore,
-) http.Handler {
-	return http.HandlerFunc(
-		func(w http.ResponseWriter, r *http.Request) {
-			h.ServeHTTP(w, r)
-			logger.Println(tasks)
-			logger.Println(contexts)
-		},
-	)
-}
-
 func newServer(
 	taskStore taskStore,
 	contextStore contextStore,
@@ -41,7 +17,7 @@ func newServer(
 	setupRoutes(mux, taskStore, contextStore)
 	var handler http.Handler = mux
 	handler = logResponses(handler, logger)
-	// handler = logStores(handler, logger, taskStore, contextStore)
+	handler = logStores(handler, logger, taskStore, contextStore)
 	return handler
 }
 
@@ -52,20 +28,32 @@ func main() {
 }
 
 func run() error {
+	testContextId := uuid.MustParse("cdf053cb-d7c7-45e3-b1e6-18f291690caa")
+	testTaskId := uuid.MustParse("cbec13d5-36f7-4bac-a326-3a75d555a995")
 	cs := contextStoreImpl{
-		uuid.MustParse("cdf053cb-d7c7-45e3-b1e6-18f291690caa"): {
-			Id:            uuid.MustParse("cdf053cb-d7c7-45e3-b1e6-18f291690caa"),
+		// sample data
+		testContextId: {
+			Id:            testContextId,
 			Name:          "Test context",
-			CurrentTaskId: nil,
+			CurrentTaskId: &testTaskId,
 		},
 	}
-	ts := &taskStoreImpl{}
+	ts := &taskStoreImpl{
+		task{
+			Id:        testTaskId,
+			ContextId: testContextId,
+			Title:     "Test task",
+			Priority:  One,
+			Notes:     nil,
+		},
+	}
 	srv := newServer(
 		ts,
 		cs,
 		log.Default(),
 	)
 
-	fmt.Println("Listening on port 8080")
-	return http.ListenAndServe(":8080", srv)
+	port := "8080"
+	fmt.Println("Listening on port", port)
+	return http.ListenAndServe(":"+port, srv)
 }
