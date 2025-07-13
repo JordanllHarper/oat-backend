@@ -85,9 +85,7 @@ func completeAndGetNextTask(
 	return getNextTask(ctx, tasks, contexts)
 }
 
-func priorityValid(priority priority) bool {
-	return 1 <= priority && priority <= 4
-}
+func priorityValid(priority priority) bool { return 1 <= priority && priority < 4 }
 
 func addTask(
 	tasks taskStore,
