@@ -65,7 +65,7 @@ func getNextTask(
 		return cmp.Compare(a.Priority, b.Priority)
 	})
 	highPriority := allTasks[0]
-	if err = contexts.SetNewCurrentTask(ctx.Id, highPriority.Id); err != nil {
+	if err = contexts.SetNewCurrentTask(ctx.Id, &highPriority.Id); err != nil {
 		return false, task{}, err
 	}
 	return true, highPriority, nil
