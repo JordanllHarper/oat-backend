@@ -79,6 +79,9 @@ func completeAndGetNextTask(
 	if err = tasks.RemoveTask(*ctx.CurrentTaskId); err != nil {
 		return false, task{}, err
 	}
+	if err = contexts.SetNewCurrentTask(ctx.Id, nil); err != nil {
+		return false, task{}, err
+	}
 	return getNextTask(ctx, tasks, contexts)
 }
 
