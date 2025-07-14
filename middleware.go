@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func logResponses(h http.Handler, logger *log.Logger) http.Handler {
+func logRequests(h http.Handler, logger *log.Logger) http.Handler {
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
 			logger.Println("Received request: ", r.Method, r.URL)
