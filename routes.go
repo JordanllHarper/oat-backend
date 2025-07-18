@@ -12,19 +12,19 @@ func setupRoutes(
 	contexts contextStore,
 ) {
 	// get the current task for the context
-	handleRoute(mux, "GET /tasks/current", handleGetCurrentTask(tasks, contexts))
+	handleRoute(mux, "GET /tasks/current/{id}", handleGetCurrentTask(tasks, contexts))
 	// get a task by id
 	handleRoute(mux, "GET /tasks/{id}", handleGetTaskById(tasks))
 	// push a task to the top of the context
-	handleRoute(mux, "POST /tasks/current", handlePostCurrentTask(tasks, contexts))
+	handleRoute(mux, "POST /tasks/current/{id}", handlePostCurrentTask(tasks, contexts))
 	// push a task to the context to be sorted
-	handleRoute(mux, "POST /tasks", handlePostTask(tasks, contexts))
+	handleRoute(mux, "POST /tasks/{id}", handlePostTask(tasks, contexts))
 	// edit the current task
-	handleRoute(mux, "PUT /tasks/current", handlePutCurrentTask(tasks, contexts))
+	handleRoute(mux, "PUT /tasks/current/{id}", handlePutCurrentTask(tasks, contexts))
 	// edit a task by id
-	handleRoute(mux, "PUT /tasks/{id}", handlePostTask(tasks, contexts))
+	handleRoute(mux, "PUT /tasks/{id}", handlePutTaskById(tasks, contexts))
 	// complete a task
-	handleRoute(mux, "PUT /complete", handleCompleteCurrentTask(tasks, contexts))
+	handleRoute(mux, "PUT /complete/{id}", handleCompleteCurrentTask(tasks, contexts))
 
 	// get all contexts
 	handleRoute(mux, "GET /context", handleGetContexts(contexts))

@@ -24,16 +24,17 @@ func getById[T any](g IDable[T], idstr string) (T, error) {
 }
 
 func getCtxFromRq(contexts contextStore, r *http.Request) (context, error) {
-	const ctxQryParam = "contextId"
-	if !r.URL.Query().Has(ctxQryParam) {
+	qId := r.PathValue(idKey)
+	if strings.TrimSpace(qId) == "" {
 		return context{}, noContextProvided{}
 	}
-	qId := r.URL.Query().Get(ctxQryParam)
-	maybeId, err := uuid.Parse(qId)
+	id, err := uuid.Parse(qId)
 	if err != nil {
 		return context{}, malformedId{qId, err}
 	}
-	return contexts.GetById(maybeId)
+	return contexts.GetById(id)
+}
+
 func getTaskFromRq(tasks taskStore, r *http.Request) (task, error) {
 	qId := r.PathValue(idKey)
 	if strings.TrimSpace(qId) == "" {
