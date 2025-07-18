@@ -16,7 +16,7 @@ func newServer(
 	mux := http.NewServeMux()
 	setupRoutes(mux, taskStore, contextStore)
 	var handler http.Handler = mux
-	handler = logResponses(handler, logger)
+	handler = logRequests(handler, logger)
 	handler = logStores(handler, logger, taskStore, contextStore)
 	return handler
 }
