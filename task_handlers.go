@@ -81,6 +81,9 @@ func handlePostTask(
 		if err != nil {
 			return nil, err
 		}
+		if ctx.CurrentTaskId == nil {
+			contexts.SetNewCurrentTask(ctx.Id, &t.Id)
+		}
 		return statusCreated{t}, nil
 	}
 }
