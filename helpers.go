@@ -34,6 +34,16 @@ func getCtxFromRq(contexts contextStore, r *http.Request) (context, error) {
 		return context{}, malformedId{qId, err}
 	}
 	return contexts.GetById(maybeId)
+func getTaskFromRq(tasks taskStore, r *http.Request) (task, error) {
+	qId := r.PathValue(idKey)
+	if strings.TrimSpace(qId) == "" {
+		return task{}, noContextProvided{}
+	}
+	id, err := uuid.Parse(qId)
+	if err != nil {
+		return task{}, malformedId{qId, err}
+	}
+	return tasks.GetById(id)
 }
 
 func getCurrentTask(
