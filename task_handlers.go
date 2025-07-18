@@ -172,3 +172,46 @@ func handlePutCurrentTask(tasks taskStore, contexts contextStore) HttpResponseHa
 		return statusOk{t}, nil
 	}
 }
+func handlePutTaskById(tasks taskStore, contexts contextStore) HttpResponseHandler {
+	type putTask struct {
+		ContextId *id       `json:"contextId"`
+		Title     *string   `json:"title"`
+		Notes     *string   `json:"notes"`
+		Priority  *priority `json:"priority"`
+	}
+	return func(r *http.Request) (HttpResponse, error) {
+		task, err := getTaskFromRq(tasks, r)
+		if err != nil {
+			return nil, err
+		}
+		putTask, err := jsonDecode[putTask](r.Body)
+		if err != nil {
+			return nil, malformedBody{err}
+		}
+
+		if putTask.ContextId != nil {
+			_, err := contexts.GetById(*putTask.ContextId)
+			if err != nil {
+				return nil, err
+			}
+			task.ContextId = *putTask.ContextId
+		}
+		if putTask.Title != nil {
+			task.Title = *putTask.Title
+		}
+		if putTask.Notes != nil {
+			task.Notes = putTask.Notes
+		}
+		if putTask.Priority != nil {
+			if !priorityValid(*putTask.Priority) {
+				return nil, invalidPriority(*putTask.Priority)
+			}
+			task.Priority = *putTask.Priority
+		}
+		t, err := tasks.ModifyTask(task)
+		if err != nil {
+			return nil, err
+		}
+		return statusOk{t}, nil
+	}
+}

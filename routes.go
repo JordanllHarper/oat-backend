@@ -22,7 +22,7 @@ func setupRoutes(
 	// edit the current task
 	handleRoute(mux, "PUT /tasks/current/{id}", handlePutCurrentTask(tasks, contexts))
 	// edit a task by id
-	handleRoute(mux, "PUT /tasks/{id}", handlePostTask(tasks, contexts))
+	handleRoute(mux, "PUT /tasks/{id}", handlePutTaskById(tasks, contexts))
 	// complete a task
 	handleRoute(mux, "PUT /complete/{id}", handleCompleteCurrentTask(tasks, contexts))
 
