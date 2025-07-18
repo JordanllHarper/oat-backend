@@ -35,6 +35,7 @@ func getCtxFromRq(contexts contextStore, r *http.Request) (context, error) {
 	}
 	return contexts.GetById(maybeId)
 }
+
 func getCurrentTask(
 	ctx context,
 	tasks taskStore,
