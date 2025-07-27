@@ -12,9 +12,7 @@ func handleGetContexts(contexts contextStore) HttpResponseHandler {
 		if err != nil {
 			return nil, err
 		}
-		return statusOk{
-			bodyMultipleValues[context]{contexts},
-		}, nil
+		return statusOk{bodyMultipleValues[context]{contexts}}, nil
 	}
 }
 func handleGetContextById(contexts contextStore) HttpResponseHandler {

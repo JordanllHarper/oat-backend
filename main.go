@@ -28,20 +28,27 @@ func main() {
 }
 
 func run() error {
-	testContextId := uuid.MustParse("cdf053cb-d7c7-45e3-b1e6-18f291690caa")
+	homeContextId := uuid.MustParse("cdf053cb-d7c7-45e3-b1e6-18f291690caa")
+	workContextId := uuid.MustParse("039c80f0-42be-41d2-812b-bd323356a892")
 	testTaskId := uuid.MustParse("cbec13d5-36f7-4bac-a326-3a75d555a995")
+	// sample data
 	cs := contextStoreImpl{
-		// sample data
-		testContextId: {
-			Id:            testContextId,
-			Name:          "Test context",
+		homeContextId: {
+			Id:            homeContextId,
+			Name:          "Home",
 			CurrentTaskId: &testTaskId,
+		},
+
+		workContextId: {
+			Id:            workContextId,
+			Name:          "Work",
+			CurrentTaskId: nil,
 		},
 	}
 	ts := &taskStoreImpl{
 		task{
 			Id:        testTaskId,
-			ContextId: testContextId,
+			ContextId: homeContextId,
 			Title:     "Test task",
 			Priority:  One,
 			Notes:     nil,

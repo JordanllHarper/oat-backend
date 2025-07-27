@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cmp"
 	"maps"
 	"slices"
 )
@@ -17,7 +18,12 @@ type contextStore interface {
 type contextStoreImpl map[id]context
 
 func (csi contextStoreImpl) All() ([]context, error) {
-	return slices.Collect(maps.Values(csi)), nil
+	values := maps.Values(csi)
+	s := slices.Collect(values)
+	slices.SortFunc(s, func(a, b context) int {
+		return cmp.Compare(a.Name, b.Name)
+	})
+	return s, nil
 }
 
 func (csi contextStoreImpl) GetById(id id) (context, error) {

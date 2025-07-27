@@ -8,6 +8,7 @@ type (
 	taskStore interface {
 		IDable[task]
 		All() ([]task, error)
+		AllForContext(id id) ([]task, error)
 		InsertTask(t task) error
 		ModifyTask(t task) (task, error)
 		RemoveTask(tId id) error
@@ -18,6 +19,16 @@ type (
 )
 
 func (tsi taskStoreImpl) All() ([]task, error) { return tsi, nil }
+func (tsi taskStoreImpl) AllForContext(id id) ([]task, error) {
+	newTasks := []task{}
+	// NOTE: Might not matter as this is for testing purposes but we are throwing branching out the window here, consider storing lists of task lists for each context
+	for _, task := range tsi {
+		if task.ContextId == id {
+			newTasks = append(newTasks, task)
+		}
+	}
+	return newTasks, nil
+}
 
 func (tsi *taskStoreImpl) ModifyTask(modified task) (task, error) {
 	index := slices.IndexFunc(*tsi, compareTasksById(modified))

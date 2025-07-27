@@ -66,7 +66,7 @@ func getNextTask(
 	tasks taskStore,
 	contexts contextStore,
 ) (hasNextTask bool, t task, err error) {
-	allTasks, err := tasks.All()
+	allTasks, err := tasks.AllForContext(ctx.Id)
 	if err != nil {
 		return false, task{}, err
 	}
