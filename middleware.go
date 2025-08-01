@@ -23,8 +23,8 @@ func logStores(
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
 			h.ServeHTTP(w, r)
-			logger.Println(tasks)
-			logger.Println(contexts)
+			logger.Println("Tasks:", tasks)
+			logger.Println("Contexts:", contexts)
 		},
 	)
 }

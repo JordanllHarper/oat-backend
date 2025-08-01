@@ -130,3 +130,11 @@ func addTask(
 	}
 	return t, nil
 }
+
+func getAllContexts(contexts contextStore) (HttpResponse, error) {
+	all, err := contexts.All()
+	if err != nil {
+		return nil, err
+	}
+	return statusOk{bodyMultipleValues[context]{all}}, nil
+}

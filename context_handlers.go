@@ -8,11 +8,7 @@ import (
 
 func handleGetContexts(contexts contextStore) HttpResponseHandler {
 	return func(r *http.Request) (HttpResponse, error) {
-		contexts, err := contexts.All()
-		if err != nil {
-			return nil, err
-		}
-		return statusOk{bodyMultipleValues[context]{contexts}}, nil
+		return getAllContexts(contexts)
 	}
 }
 func handleGetContextById(contexts contextStore) HttpResponseHandler {
@@ -42,7 +38,7 @@ func handlePostContext(contexts contextStore) HttpResponseHandler {
 		if err := contexts.Add(context); err != nil {
 			return nil, err
 		}
-		return statusCreated{context}, nil
+		return getAllContexts(contexts)
 	}
 }
 func handlePutContext(contexts contextStore) HttpResponseHandler {
@@ -59,11 +55,10 @@ func handlePutContext(contexts contextStore) HttpResponseHandler {
 		if err != nil {
 			return nil, malformedId{qId, err}
 		}
-		context, err := contexts.EditName(id, putCtx.NewName)
-		if err != nil {
+		if err = contexts.EditName(id, putCtx.NewName); err != nil {
 			return nil, err
 		}
-		return statusOk{context}, nil
+		return getAllContexts(contexts)
 	}
 }
 
@@ -80,6 +75,6 @@ func handleDeleteContext(contexts contextStore, tasks taskStore) HttpResponseHan
 		if err = tasks.DeleteByContext(id); err != nil {
 			return nil, err
 		}
-		return statusNoContent{}, nil
+		return getAllContexts(contexts)
 	}
 }

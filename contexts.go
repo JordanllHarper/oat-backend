@@ -1,7 +1,6 @@
 package main
 
 import (
-	"cmp"
 	"maps"
 	"slices"
 )
@@ -10,7 +9,7 @@ type contextStore interface {
 	IDable[context]
 	All() ([]context, error)
 	Add(c context) error
-	EditName(id id, name string) (context, error)
+	EditName(id id, name string) error
 	SetNewCurrentTask(ctxId id, tId *id) error
 	Delete(id id) error
 }
@@ -18,12 +17,7 @@ type contextStore interface {
 type contextStoreImpl map[id]context
 
 func (csi contextStoreImpl) All() ([]context, error) {
-	values := maps.Values(csi)
-	s := slices.Collect(values)
-	slices.SortFunc(s, func(a, b context) int {
-		return cmp.Compare(a.Name, b.Name)
-	})
-	return s, nil
+	return slices.Collect(maps.Values(csi)), nil
 }
 
 func (csi contextStoreImpl) GetById(id id) (context, error) {
@@ -41,14 +35,14 @@ func (csi contextStoreImpl) Add(c context) error {
 	csi[c.Id] = c
 	return nil
 }
-func (csi contextStoreImpl) EditName(id id, newName string) (context, error) {
+func (csi contextStoreImpl) EditName(id id, newName string) error {
 	ctx, found := csi[id]
 	if !found {
-		return context{}, idNotFound(id)
+		return idNotFound(id)
 	}
 	ctx.Name = newName
 	csi[id] = ctx
-	return ctx, nil
+	return nil
 }
 func (csi contextStoreImpl) Delete(id id) error {
 	_, found := csi[id]
