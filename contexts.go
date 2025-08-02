@@ -17,7 +17,12 @@ type contextStore interface {
 type contextStoreImpl map[id]context
 
 func (csi contextStoreImpl) All() ([]context, error) {
-	return slices.Collect(maps.Values(csi)), nil
+	values := slices.Collect(maps.Values(csi))
+	if values == nil {
+		// return an empty context list rather than nil
+		return []context{}, nil
+	}
+	return values, nil
 }
 
 func (csi contextStoreImpl) GetById(id id) (context, error) {
