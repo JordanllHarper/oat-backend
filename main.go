@@ -51,7 +51,7 @@ func run() error {
 			ContextId: homeContextId,
 			Title:     "Test task",
 			Priority:  One,
-			Notes:     nil,
+			Notes:     "",
 		},
 	}
 	srv := newServer(

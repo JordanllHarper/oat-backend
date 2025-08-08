@@ -6,15 +6,9 @@ import (
 )
 
 type (
-	HttpError interface {
-		StatusCode() int
-		error
-	}
-
-	internalServerError struct{ error }
-	idNotFound          id
-	idAlreadyExists     id
-	malformedId         struct {
+	idNotFound      id
+	idAlreadyExists id
+	malformedId     struct {
 		id string
 		error
 	}
@@ -29,8 +23,6 @@ type (
 	invalidPriority priority
 	noTitle         struct{}
 )
-
-func (err internalServerError) StatusCode() int { return http.StatusInternalServerError }
 
 func (err idNotFound) StatusCode() int { return http.StatusBadRequest }
 func (err idNotFound) Error() string   { return fmt.Sprintf("Id %s not found", id(err)) }

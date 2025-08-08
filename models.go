@@ -18,7 +18,7 @@ type (
 		Id        id       `json:"id"`
 		ContextId id       `json:"contextId"`
 		Title     string   `json:"title"`
-		Notes     *string  `json:"notes"`
+		Notes     string   `json:"notes"`
 		Priority  priority `json:"priority"`
 	}
 
@@ -32,7 +32,7 @@ type (
 func newTask(
 	contextId id,
 	title string,
-	notes *string,
+	notes string,
 	priority priority,
 ) task {
 	return task{

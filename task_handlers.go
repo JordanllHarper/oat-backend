@@ -59,7 +59,7 @@ func handlePostTask(
 ) HttpResponseHandler {
 	type postTask struct {
 		Title    string   `json:"title"`
-		Notes    *string  `json:"notes"`
+		Notes    string   `json:"notes"`
 		Priority priority `json:"priority"`
 	}
 	return func(r *http.Request) (HttpResponse, error) {
@@ -93,7 +93,7 @@ func handlePostCurrentTask(
 ) HttpResponseHandler {
 	type postTask struct {
 		Title    string   `json:"title"`
-		Notes    *string  `json:"notes"`
+		Notes    string   `json:"notes"`
 		Priority priority `json:"priority"`
 	}
 	return func(r *http.Request) (HttpResponse, error) {
@@ -157,7 +157,7 @@ func handlePutCurrentTask(tasks taskStore, contexts contextStore) HttpResponseHa
 			currentTask.Title = *putTask.Title
 		}
 		if putTask.Notes != nil {
-			currentTask.Notes = putTask.Notes
+			currentTask.Notes = *putTask.Notes
 		}
 		if putTask.Priority != nil {
 			if !priorityValid(*putTask.Priority) {
@@ -200,7 +200,7 @@ func handlePutTaskById(tasks taskStore, contexts contextStore) HttpResponseHandl
 			task.Title = *putTask.Title
 		}
 		if putTask.Notes != nil {
-			task.Notes = putTask.Notes
+			task.Notes = *putTask.Notes
 		}
 		if putTask.Priority != nil {
 			if !priorityValid(*putTask.Priority) {

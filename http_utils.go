@@ -9,7 +9,39 @@ import (
 	"net/http"
 )
 
-type HttpResponseHandler func(r *http.Request) (HttpResponse, error)
+type (
+	HttpResponse interface {
+		Body() any
+		StatusCode() int
+	}
+
+	bodyMultipleValues[T any] struct {
+		Values []T `json:"values"`
+	}
+	statusOk        struct{ body any }
+	statusCreated   struct{ body any }
+	statusNoContent struct{}
+)
+
+func (stat statusOk) Body() any       { return stat.body }
+func (stat statusOk) StatusCode() int { return http.StatusOK }
+
+func (stat statusCreated) Body() any       { return stat.body }
+func (stat statusCreated) StatusCode() int { return http.StatusCreated }
+
+func (stat statusNoContent) Body() any       { return nil }
+func (stat statusNoContent) StatusCode() int { return http.StatusNoContent }
+
+type (
+	HttpError interface {
+		StatusCode() int
+		error
+	}
+	internalServerError struct{ error }
+	HttpResponseHandler func(r *http.Request) (HttpResponse, error)
+)
+
+func (err internalServerError) StatusCode() int { return http.StatusInternalServerError }
 
 func mapErrToHttpError(err error) HttpError {
 	var httpErr HttpError

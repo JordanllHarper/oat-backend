@@ -103,7 +103,7 @@ func addTask(
 	tasks taskStore,
 	ctxId id,
 	title string,
-	notes *string,
+	notes string,
 	p priority,
 ) (task, error) {
 	if !priorityValid(p) {
@@ -112,13 +112,7 @@ func addTask(
 	if strings.TrimSpace(title) == "" {
 		return task{}, noTitle{}
 	}
-	if notes != nil {
-		// if a user adds newlines intentionally we don't want to remove them
-		*notes = trimPreserveNewline(*notes)
-		if *notes == "" {
-			notes = nil
-		}
-	}
+	notes = strings.TrimSpace(notes)
 	t := newTask(
 		ctxId,
 		title,
