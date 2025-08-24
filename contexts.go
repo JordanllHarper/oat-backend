@@ -5,16 +5,33 @@ import (
 	"slices"
 )
 
-type contextStore interface {
-	IDable[context]
-	All() ([]context, error)
-	Add(c context) error
-	EditName(id id, name string) error
-	SetNewCurrentTask(ctxId id, tId *id) error
-	Delete(id id) error
-}
+type (
+	contextGetter interface {
+		All() ([]context, error)
+	}
+	contextAdder interface {
+		Add(c context) error
+	}
+	contextEditer interface {
+		EditName(id id, name string) error
+	}
+	contextCurrentTaskSetter interface {
+		SetNewCurrentTask(ctxId id, tId *id) error
+	}
+	contextDeleter interface {
+		Delete(id id) error
+	}
+	contextStore interface {
+		IDable[context]
+		contextGetter
+		contextAdder
+		contextEditer
+		contextCurrentTaskSetter
+		contextDeleter
+	}
 
-type contextStoreImpl map[id]context
+	contextStoreImpl map[id]context
+)
 
 func (csi contextStoreImpl) All() ([]context, error) {
 	values := slices.Collect(maps.Values(csi))

@@ -2,6 +2,8 @@ package main
 
 import (
 	"net/http"
+
+	"github.com/google/uuid"
 )
 
 func handleGetTaskById(tasks taskStore) HttpResponseHandler {
@@ -73,6 +75,7 @@ func handlePostTask(
 		}
 		t, err := addTask(
 			tasks,
+			uuid.New,
 			ctx.Id,
 			postTask.Title,
 			postTask.Notes,
@@ -82,7 +85,10 @@ func handlePostTask(
 			return nil, err
 		}
 		if ctx.CurrentTaskId == nil {
-			contexts.SetNewCurrentTask(ctx.Id, &t.Id)
+			err = contexts.SetNewCurrentTask(ctx.Id, &t.Id)
+			if err != nil {
+				return nil, err
+			}
 		}
 		return statusCreated{t}, nil
 	}
@@ -107,6 +113,7 @@ func handlePostCurrentTask(
 		}
 		t, err := addTask(
 			tasks,
+			uuid.New,
 			ctx.Id,
 			postTask.Title,
 			postTask.Notes,
@@ -121,57 +128,6 @@ func handlePostCurrentTask(
 		return statusCreated{t}, nil
 	}
 }
-func handlePutCurrentTask(tasks taskStore, contexts contextStore) HttpResponseHandler {
-	type putTask struct {
-		ContextId *id       `json:"contextId"`
-		Title     *string   `json:"title"`
-		Notes     *string   `json:"notes"`
-		Priority  *priority `json:"priority"`
-	}
-	return func(r *http.Request) (HttpResponse, error) {
-		ctx, err := getCtxFromRq(contexts, r)
-		if err != nil {
-			return nil, err
-		}
-		currentTaskId := ctx.CurrentTaskId
-		if currentTaskId == nil {
-			return nil, noCurrentTask(ctx.Id)
-		}
-		currentTask, err := tasks.GetById(*currentTaskId)
-		if err != nil {
-			return nil, err
-		}
-		putTask, err := jsonDecode[putTask](r.Body)
-		if err != nil {
-			return nil, malformedBody{err}
-		}
-
-		if putTask.ContextId != nil {
-			_, err := contexts.GetById(*putTask.ContextId)
-			if err != nil {
-				return nil, err
-			}
-			currentTask.ContextId = *putTask.ContextId
-		}
-		if putTask.Title != nil {
-			currentTask.Title = *putTask.Title
-		}
-		if putTask.Notes != nil {
-			currentTask.Notes = *putTask.Notes
-		}
-		if putTask.Priority != nil {
-			if !priorityValid(*putTask.Priority) {
-				return nil, invalidPriority(*putTask.Priority)
-			}
-			currentTask.Priority = *putTask.Priority
-		}
-		t, err := tasks.ModifyTask(currentTask)
-		if err != nil {
-			return nil, err
-		}
-		return statusOk{t}, nil
-	}
-}
 func handlePutTaskById(tasks taskStore, contexts contextStore) HttpResponseHandler {
 	type putTask struct {
 		ContextId *id       `json:"contextId"`
@@ -179,6 +135,24 @@ func handlePutTaskById(tasks taskStore, contexts contextStore) HttpResponseHandl
 		Notes     *string   `json:"notes"`
 		Priority  *priority `json:"priority"`
 	}
+
+	// naive - caller responsible for validation
+	updateTaskFields := func(pt putTask, t task) task {
+		if pt.ContextId != nil {
+			t.ContextId = *pt.ContextId
+		}
+		if pt.Title != nil {
+			t.Title = *pt.Title
+		}
+		if pt.Notes != nil {
+			t.Notes = *pt.Notes
+		}
+		if pt.Priority != nil {
+			t.Priority = *pt.Priority
+		}
+		return t
+	}
+
 	return func(r *http.Request) (HttpResponse, error) {
 		task, err := getTaskFromRq(tasks, r)
 		if err != nil {
@@ -188,30 +162,37 @@ func handlePutTaskById(tasks taskStore, contexts contextStore) HttpResponseHandl
 		if err != nil {
 			return nil, malformedBody{err}
 		}
-
-		if putTask.ContextId != nil {
-			_, err := contexts.GetById(*putTask.ContextId)
-			if err != nil {
-				return nil, err
-			}
-			task.ContextId = *putTask.ContextId
-		}
-		if putTask.Title != nil {
-			task.Title = *putTask.Title
-		}
-		if putTask.Notes != nil {
-			task.Notes = *putTask.Notes
-		}
-		if putTask.Priority != nil {
-			if !priorityValid(*putTask.Priority) {
-				return nil, invalidPriority(*putTask.Priority)
-			}
-			task.Priority = *putTask.Priority
-		}
-		t, err := tasks.ModifyTask(task)
+		currentCtx, err := contexts.GetById(task.ContextId)
 		if err != nil {
 			return nil, err
 		}
-		return statusOk{t}, nil
+
+		modifiedTask := updateTaskFields(putTask, task)
+		if !priorityValid(modifiedTask.Priority) {
+			return nil, invalidPriority(*putTask.Priority)
+		}
+		targetCtx, err := contexts.GetById(modifiedTask.ContextId)
+		if err != nil {
+			return nil, err
+		}
+
+		// set the task as current for target - might want to change this in the future
+		if currentCtx.Id != targetCtx.Id {
+			if err = contexts.SetNewCurrentTask(targetCtx.Id, &modifiedTask.Id); err != nil {
+				return nil, err
+			}
+		}
+
+		t, err := tasks.ModifyTask(modifiedTask)
+		if err != nil {
+			return nil, err
+		}
+		// update the current task of the current ctx
+		if *currentCtx.CurrentTaskId == t.Id {
+			if _, _, err := setNextTask(currentCtx, tasks, contexts); err != nil {
+				return nil, err
+			}
+		}
+		return statusNoContent{}, nil
 	}
 }

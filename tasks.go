@@ -5,25 +5,40 @@ import (
 )
 
 type (
-	taskStore interface {
-		IDable[task]
+	taskGetter interface {
 		All() ([]task, error)
-		AllForContext(id id) ([]task, error)
+		AllForContext(cId id) ([]task, error)
+	}
+	taskInserter interface {
 		InsertTask(t task) error
+	}
+	taskEditer interface {
 		ModifyTask(t task) (task, error)
+	}
+	taskDeleter interface {
 		RemoveTask(tId id) error
 		DeleteByContext(cId id) error
+	}
+	taskGetterDeleter interface {
+		taskGetter
+		taskDeleter
+	}
+	taskStore interface {
+		IDable[task]
+		taskGetter
+		taskInserter
+		taskEditer
+		taskDeleter
 	}
 
 	taskStoreImpl []task
 )
 
 func (tsi taskStoreImpl) All() ([]task, error) { return tsi, nil }
-func (tsi taskStoreImpl) AllForContext(id id) ([]task, error) {
+func (tsi taskStoreImpl) AllForContext(cId id) ([]task, error) {
 	newTasks := []task{}
-	// NOTE: Might not matter as this is for testing purposes but we are throwing branching out the window here, consider storing lists of task lists for each context
 	for _, task := range tsi {
-		if task.ContextId == id {
+		if task.ContextId == cId {
 			newTasks = append(newTasks, task)
 		}
 	}

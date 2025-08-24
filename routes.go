@@ -19,8 +19,6 @@ func setupRoutes(
 	handleRoute(mux, "POST /tasks/current/{id}", handlePostCurrentTask(tasks, contexts))
 	// push a task to the context to be sorted
 	handleRoute(mux, "POST /tasks/{id}", handlePostTask(tasks, contexts))
-	// edit the current task
-	handleRoute(mux, "PUT /tasks/current/{id}", handlePutCurrentTask(tasks, contexts))
 	// edit a task by id
 	handleRoute(mux, "PUT /tasks/{id}", handlePutTaskById(tasks, contexts))
 	// complete a task

@@ -61,17 +61,18 @@ func getCurrentTask(
 	return true, t, nil
 }
 
-func getNextTask(
+func setNextTask(
 	ctx context,
-	tasks taskStore,
-	contexts contextStore,
+	tasks taskGetter,
+	contexts contextCurrentTaskSetter,
 ) (hasNextTask bool, t task, err error) {
 	allTasks, err := tasks.AllForContext(ctx.Id)
 	if err != nil {
 		return false, task{}, err
 	}
 	if len(allTasks) == 0 {
-		return false, task{}, nil
+		// no more tasks, set current task to nil
+		return false, task{}, contexts.SetNewCurrentTask(ctx.Id, nil)
 	}
 	slices.SortFunc(allTasks, func(a, b task) int {
 		return cmp.Compare(a.Priority, b.Priority)
@@ -85,22 +86,26 @@ func getNextTask(
 
 func completeAndGetNextTask(
 	ctx context,
-	tasks taskStore,
-	contexts contextStore,
+	tasks taskGetterDeleter,
+	contexts contextCurrentTaskSetter,
 ) (hasNextTask bool, t task, err error) {
+	if ctx.CurrentTaskId == nil {
+		return false, task{}, nil
+	}
 	if err = tasks.RemoveTask(*ctx.CurrentTaskId); err != nil {
 		return false, task{}, err
 	}
 	if err = contexts.SetNewCurrentTask(ctx.Id, nil); err != nil {
 		return false, task{}, err
 	}
-	return getNextTask(ctx, tasks, contexts)
+	return setNextTask(ctx, tasks, contexts)
 }
 
 func priorityValid(priority priority) bool { return 1 <= priority && priority < 4 }
 
 func addTask(
 	tasks taskStore,
+	idGenFunc func() id,
 	ctxId id,
 	title string,
 	notes string,
@@ -114,6 +119,7 @@ func addTask(
 	}
 	notes = strings.TrimSpace(notes)
 	t := newTask(
+		idGenFunc,
 		ctxId,
 		title,
 		notes,
@@ -125,7 +131,7 @@ func addTask(
 	return t, nil
 }
 
-func getAllContexts(contexts contextStore) (HttpResponse, error) {
+func getAllContexts(contexts contextGetter) (HttpResponse, error) {
 	all, err := contexts.All()
 	if err != nil {
 		return nil, err

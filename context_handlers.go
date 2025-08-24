@@ -13,16 +13,11 @@ func handleGetContexts(contexts contextStore) HttpResponseHandler {
 }
 func handleGetContextById(contexts contextStore) HttpResponseHandler {
 	return func(r *http.Request) (HttpResponse, error) {
-		qId := r.PathValue(idKey)
-		id, err := uuid.Parse(qId)
-		if err != nil {
-			return nil, malformedId{qId, err}
-		}
-		context, err := contexts.GetById(id)
+		ctx, err := getById(contexts, r.PathValue(idKey))
 		if err != nil {
 			return nil, err
 		}
-		return statusOk{context}, nil
+		return statusOk{ctx}, nil
 	}
 }
 func handlePostContext(contexts contextStore) HttpResponseHandler {

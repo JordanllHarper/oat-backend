@@ -30,13 +30,14 @@ type (
 )
 
 func newTask(
+	idGenFunc func() id,
 	contextId id,
 	title string,
 	notes string,
 	priority priority,
 ) task {
 	return task{
-		Id:        uuid.New(),
+		Id:        idGenFunc(),
 		ContextId: contextId,
 		Title:     title,
 		Notes:     notes,
